@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import urllib.parse
 from google import genai
-from google.genai import types  # Add this import
+from google.genai import types
 
 # 1. Premium Interface Branding Configurations
 st.set_page_config(
@@ -33,14 +33,13 @@ st.sidebar.write("Scan this code right now to open this interface live on your m
 # Dynamic web URL hook calibration layer
 try:
     from streamlit.web.server.websocket_headers import _get_websocket_headers
-    headers = _get_websocket_headers()
-    host = headers.get("Host", "share.streamlit.io")
+    host = _get_websocket_headers().get("Host", "share.streamlit.io")
     app_url = f"https://{host}"
 except Exception:
-    app_url = "https://share.streamlit.io/"
+    app_url = "https://streamlit.io"
 
 # Generate dynamic production-ready QR frame asset
-qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={urllib.parse.quote(app_url)}"
+qr_api_url = f"https://qrserver.com{urllib.parse.quote(app_url)}"
 st.sidebar.image(qr_api_url, caption="Scan to evaluate live", use_container_width=True)
 st.sidebar.markdown("---")
 # =====================================================================
@@ -92,30 +91,26 @@ if uploaded_blueprint and guest_count and menu_details:
     """
     
     with st.spinner("Executing multi-agent spatial reasoning calculations..."):
-       #   THIS FIXES THE ERROR NATIVELY:
-image_data = uploaded_file.read()
-
-# Wrap the raw image bytes in the official SDK Part class
-image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
-
-response = client.models.generate_content(
-    model="gemini-3.6-flash",
-    contents=[prompt, image_part],  # Pass the validated part safely
-)
-
+        # Code block inside 'with' statement must be strictly indented forward
+        image_data = uploaded_blueprint.read()
+        image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
+        
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[prompt, image_part]
+        )
         
         # Split text structure from metrics data elements cleanly
         ai_output = response.text.split("====DISPATCH====")
         raw_metrics = ai_output[0].split("\n")
         
         # Safe fallback variable extraction metrics loops
-        footprint = next((line.split(": ")[1] for line in raw_metrics if "Footprint" in line and ": " in line), "8,000 sq ft")
-        tables = next((line.split(": ")[1] for line in raw_metrics if "Tables" in line and ": " in line), str(guest_count // 10))
-        chicken = next((line.split(": ")[1] for line in raw_metrics if "Chicken" in line and ": " in line), "120 kg")
-        rice = next((line.split(": ")[1] for line in raw_metrics if "Rice" in line and ": " in line), "75 kg")
+        footprint = next((line.split(": ")[1] for line in raw_metrics if "Footprint" in line), "8,000 sq ft")
+        tables = next((line.split(": ")[1] for line in raw_metrics if "Tables" in line), str(guest_count // 10))
+        chicken = next((line.split(": ")[1] for line in raw_metrics if "Chicken" in line), "120 kg")
+        rice = next((line.split(": ")[1] for line in raw_metrics if "Rice" in line), "75 kg")
         try:
-            budget_line = next((line.split(": ")[1] for line in raw_metrics if "Budget" in line and ": " in line), "450000")
-            budget_str = ''.join(filter(str.isdigit, budget_line))
+            budget_str = ''.join(filter(str.isdigit, next((line.split(": ")[1] for line in raw_metrics if "Budget" in line), "450000")))
             total_budget = int(budget_str) if budget_str else 450000
         except Exception:
             total_budget = 450000
@@ -149,7 +144,7 @@ response = client.models.generate_content(
             
             # Formulate safe text-encoded routing payload packages
             encoded_sms = urllib.parse.quote(final_manifest)
-            whatsapp_url = f"https://wa.me/?text={encoded_sms}"
+            whatsapp_url = f"https://wa.me{encoded_sms}"
             
             # Primary deep-linked action controller button execution logic
             st.markdown(f"""
