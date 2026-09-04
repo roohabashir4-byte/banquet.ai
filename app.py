@@ -85,7 +85,7 @@ if uploaded_blueprint and guest_count and menu_details:
     Extract the actual total structural square footage numbers natively written or implied in the blueprint sketch.
     
     Output exactly in this strict baseline format with values matching the requested calculations. Do not modify the headers:
-    Footprint: [Extract the precise structural square footage area string from the image, e.g., 4500 sq ft or 1890 sq ft]
+    Footprint: [Extract the precise structural square footage area string from the image, e.g., 4500 sq ft or 12500 sq ft]
     PerHeadRate: [Calculate a dynamic realistic catering per head cost in PKR digits only based on menu complexity, e.g., 2100]
     HallRent: [Calculate realistic commercial venue rental space fee based on footprint area in PKR digits only, e.g., 90000]
     ====DISPATCH====
@@ -110,7 +110,7 @@ if uploaded_blueprint and guest_count and menu_details:
         image_data = uploaded_blueprint.read()
         image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
         
-        # FIXED: Corrected model endpoint to production flagship 'gemini-2.5-flash'
+        # FIXED: Corrected model naming structure flag parameter to native canonical string
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=[final_prompt, image_part]
