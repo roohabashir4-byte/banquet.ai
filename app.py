@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import urllib.parse
 from google import genai
+from google.genai import types  # Add this import
 
 # 1. Premium Interface Branding Configurations
 st.set_page_config(
