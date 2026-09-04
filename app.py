@@ -21,7 +21,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # =====================================================================
-# 📲 SIDEBAR: ENTERPRISE HUB & LIVE TESTING SUITE
+# 📲 SIDEBAR: ENTERPRISE HUB & AUTOMATED QR SUITE
 # =====================================================================
 st.sidebar.markdown("### 🏢 BanquetAI Enterprise Console")
 st.sidebar.caption("Operational Node: Active")
@@ -30,15 +30,18 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 📲 Live Audience Testing")
 st.sidebar.write("Scan this code right now to open this interface live on your mobile device directly from your seat!")
 
-# Dynamic web URL hook calibration layer
+# Robust dynamic web URL discovery engine
 try:
     from streamlit.web.server.websocket_headers import _get_websocket_headers
-    host = _get_websocket_headers().get("Host", "share.streamlit.io")
-    app_url = f"https://{host}"
+    host = _get_websocket_headers().get("Host")
+    if not host or "localhost" in host:
+        app_url = "https://streamlit.app"  # Your primary production cloud handle
+    else:
+        app_url = f"https://{host}"
 except Exception:
-    app_url = "https://streamlit.io"
+    app_url = "https://streamlit.app"
 
-# Generate dynamic production-ready QR frame asset
+# Generate dynamic production-ready QR frame asset (Uses a robust global endpoint)
 qr_api_url = f"https://qrserver.com{urllib.parse.quote(app_url)}"
 st.sidebar.image(qr_api_url, caption="Scan to evaluate live", use_container_width=True)
 st.sidebar.markdown("---")
@@ -46,7 +49,7 @@ st.sidebar.markdown("---")
 
 # 3. HIGH-IMPACT HERO LANDING SECTION
 st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>✨ BanquetAI</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #4B5563;'>Autonomous Venue Orchestration & Catering Audit Engine</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #4B5563;'>Autonomous Venue Operations & Commercial Financial Auditor</h3>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #6B7280; font-size: 14px;'>Modernizing high-volume hospitality management through computer vision spatial planning and raw procurement intelligence.</p>", unsafe_allow_html=True)
 st.write("---")
 
@@ -77,23 +80,34 @@ if uploaded_blueprint and guest_count and menu_details:
     You are an elite hospitality operations architect specializing in computer vision spatial layouts and event logistics.
     Scan the provided image to locate text markers, dimensions, or layout bounds indicating room footprint, then process the inputs.
     
-    Output exactly in this strict baseline format:
-    Detected Spatial Footprint: [State dimensions or estimated area from image text, e.g., 8000 sq ft]
-    Max Tables Fit: [Just the number of tables, e.g., 30]
-    Est. Chicken Stock Needed: [Just the number in kg, e.g., 120]
-    Est. Rice Stock Needed: [Just the number in kg, e.g., 75]
-    Est. Total Event Budget: [Total estimated wholesale cost in PKR digits only, e.g., 450000]
+    Output exactly in this strict baseline format with values matching the requested calculations:
+    Footprint: [State dimensions or estimated area from image text, e.g., 8000 sq ft]
+    Tables: [Just the number of tables, e.g., 30]
+    Meat: [Calculate 250g per head for primary rice + 150g for kebab in kg, append 'kg' suffix, e.g., 120 kg]
+    Rice: [Calculate 150g high-quality Basmati per head in kg, append 'kg' suffix, e.g., 45 kg]
+    Naan: [Calculate 1.5 Naan per head baseline allocation, append 'pcs' suffix, e.g., 450 pcs]
+    Sweets: [Calculate 100g serving size of Gajar Halwa per head in kg including milk/khoya, append 'kg' suffix, e.g., 30 kg]
+    PerHeadRate: [Calculate a dynamic realistic catering per head cost in PKR digits only based on menu complexity, e.g., 1200]
+    HallRent: [Calculate realistic commercial venue rental space fee based on footprint area in PKR digits only, e.g., 90000]
     ====DISPATCH====
-    BANQUETAI - KITCHEN & DECOR DISPATCH ORDER
-    Venue Scope: Visual Layout Inspected | Target Capacity: CUSTOM_GUESTS Pax
-    Kitchen Ops: Raw raw ingredients calculated for CUSTOM_MENU. Ensure food layout is active exactly 30 mins before one-dish deadline.
-    Decor Ops: Set up layout configuration safely based on blueprint scan. Maintain center stage alignment corridors clear. Khuda Hafiz.
+    ✨ BANQUETAI OFFICIAL OPERATIONAL DISPATCH MANIFEST
+    📍 Venue Scope: Visual Layout Inspected
+    👥 Target Capacity: CUSTOM_GUESTS Pax
+    🍱 Catering Blueprint: CUSTOM_MENU
+    
+    📢 RAW PROCUREMENT MATRIX LOG:
+    - Estimated Total Meat Required: METRIC_MEAT
+    - Estimated Total Rice Required: METRIC_RICE
+    - Total Tandoori Naan Allocation: METRIC_NAAN
+    - Total Sweet Dessert Base (Gajar Halwa): METRIC_SWEET
+    
+    ⚠️ FLOOR-PLAN RULE: Ensure main stage corridors remain completely clear. Service staff ready exactly 30 minutes before one-dish deadline code active. Khuda Hafiz.
     """
     
     # Overwrite template payload properties cleanly using native string transformations 
     final_prompt = base_instructions.replace("CUSTOM_GUESTS", str(guest_count)).replace("CUSTOM_MENU", menu_details)
 
-    with st.spinner("Executing multi-agent spatial reasoning calculations..."):
+    with st.spinner("Executing multi-agent spatial reasoning calculations via gemini-3.6-flash..."):
         image_data = uploaded_blueprint.read()
         image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
         
@@ -103,72 +117,75 @@ if uploaded_blueprint and guest_count and menu_details:
         )
         
         # Split text structure from metrics data elements cleanly
-        ai_output = response.text.split("====DISPATCH====")
-        raw_metrics = ai_output[0].split("\n")
+        text_payload = response.text
         
-        # Safe fallback variable extraction metrics loops
-        footprint = next((line.split(": ")[1] for line in raw_metrics if "Footprint" in line), "8,000 sq ft")
-        tables = next((line.split(": ")[1] for line in raw_metrics if "Tables" in line), str(guest_count // 10))
-        chicken = next((line.split(": ")[1] for line in raw_metrics if "Chicken" in line), "120 kg")
-        rice = next((line.split(": ")[1] for line in raw_metrics if "Rice" in line), "75 kg")
+        # Safe structural dictionary variable extraction blocks to prevent validation index failures
+        metrics = {}
+        for line in text_payload.split("\n"):
+            if ":" in line and "====" not in line:
+                key, val = line.split(":", 1)
+                metrics[key.strip()] = val.strip()
+        
+        # Safe extraction handles fallback parameters smoothly
+        footprint = metrics.get("Footprint", "8,000 sq ft")
+        tables = metrics.get("Tables", str(guest_count // 10))
+        meat_stock = metrics.get("Meat", "120 kg")
+        rice_stock = metrics.get("Rice", "45 kg")
+        naan_count = metrics.get("Naan", "450 pcs")
+        sweet_stock = metrics.get("Sweets", "30 kg")
+        
+        # Clear Financial Audit Formulas
         try:
-            budget_str = ''.join(filter(str.isdigit, next((line.split(": ")[1] for line in raw_metrics if "Budget" in line), "450000")))
-            total_budget = int(budget_str) if budget_str else 450000
+            per_head = int(''.join(filter(str.isdigit, metrics.get("PerHeadRate", "1200"))))
+            hall_rent = int(''.join(filter(str.isdigit, metrics.get("HallRent", "90000"))))
         except Exception:
-            total_budget = 450000
+            per_head, hall_rent = 1200, 90000
             
+        total_budget = (guest_count * per_head) + hall_rent
         saas_fee = int(total_budget * 0.015)
+        
+        # Update manifest string parameters programmatically before rendering
+        ai_dispatch_block = text_payload.split("====DISPATCH====")[-1].strip()
+        final_manifest = ai_dispatch_block.replace("METRIC_MEAT", meat_stock).replace("METRIC_RICE", rice_stock).replace("METRIC_NAAN", naan_count).replace("METRIC_SWEET", sweet_stock)
         
         # =====================================================================
         # 📈 HIGH-IMPACT METRICS VISUAL GRID (CLEAN & CATCHY BRAND DESIGN)
         # =====================================================================
-        st.subheader("📊 Operational Analytics & Revenue Matrix")
+        st.subheader("📊 Operational Analytics & Resource Matrix")
         
         m_col1, m_col2, m_col3 = st.columns(3)
-        m_col1.metric("📐 Layout Area", footprint)
+        m_col1.metric("📐 Layout Space Area", footprint)
         m_col2.metric("🍽️ Safe 10-Seater Tables", f"{tables} Tables")
-        m_col3.metric("🍗 Raw Chicken Stock", f"{chicken}")
+        m_col3.metric("🍗 Required Meat Stock", meat_stock)
         
         m_col4, m_col5, m_col6 = st.columns(3)
-        m_col4.metric("🌾 Raw Rice Stock", f"{rice}")
-        m_col5.metric("💰 Gross Event Volume", f"Rs. {total_budget:,}")
-        m_col6.metric("🔥 SaaS Processing Profit (1.5%)", f"Rs. {saas_fee:,}", delta="Net Yield")
+        m_col4.metric("🌾 Required Rice Stock", rice_stock)
+        m_col6.metric("🫓 Total Naan Count", naan_count)
+        m_col5.metric("🥕 Gajar Halwa Desserts", sweet_stock)
+        
+        st.markdown("### 💰 Financial Audit & Commercial Ledger")
+        
+        f_col1, f_col2, f_col3 = st.columns(3)
+        f_col1.metric("💰 Gross Event Volume", f"Rs. {total_budget:,}")
+        f_col2.metric("🔥 SaaS Platform Yield (1.5%)", f"Rs. {saas_fee:,}", delta="Net Revenue")
+        
+        # 🧾 DYNAMIC TRANSPARENT COST LEDGER: Explaining the calculations to judges
+        with st.expander("🔍 View Transparent Cost Audit Calculations"):
+            st.write(f"**Catering Menu Cost:** {guest_count} Guests × Rs. {per_head:,}/Head = **Rs. {(guest_count * per_head):,}**")
+            st.write(f"**Venue Space Rental Fee:** Extracted Spatial Footprint Valuation = **Rs. {hall_rent:,}**")
+            st.write(f"**Gross Audited Total Calculation:** (Catering Cost) + (Venue Rental) = **Rs. {total_budget:,}**")
         # =====================================================================
         
-        if len(ai_output) > 1:
-            st.write("---")
-            st.subheader("📋 Step 3: Operational Logistics Actions")
-            
-            final_manifest = ai_output[1].strip()
-            
-            # Displays manifest inside a clean, high-contrast code visualization layout block
-            st.code(final_manifest, language="text")
-            
-            # Formulate safe text-encoded routing payload packages
-            encoded_sms = urllib.parse.quote(final_manifest)
-            whatsapp_url = f"https://wa.me{encoded_sms}"
-            
-            # Primary deep-linked action controller button execution logic
-            st.markdown(f"""
-                <a href="{whatsapp_url}" target="_blank">
-                    <button style="background-color:#25D366;color:white;border:none;padding:14px 28px;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;">
-                        📲 Dispatch Digital Manifest to Staff via WhatsApp
-                    </button>
-                </a>
-            """, unsafe_allow_html=True)
-            
-            # Digital accessibility player controller integration logic loops
-            clean_speech = final_manifest.replace("\n", " ").replace("'", "\\'")
-            st.components.v1.html(f"""
-                <script>
-                function playSpeech() {{
-                    let msg = new SpeechSynthesisUtterance('{clean_speech}');
-                    msg.lang = 'ur-PK'; 
-                    msg.rate = 0.85;    
-                    window.speechSynthesis.speak(msg);
-                }}
-                </script>
-                <button onclick="playSpeech()" style="background-color:#1E3A8A;color:white;border:none;padding:12px 24px;border-radius:6px;font-size:16px;font-weight:bold;cursor:pointer;width:100%;">
-                    🔊 Broadcast Audio Instruction to Kitchen Speakers
-                </button>
-            """, height=60)
+        st.write("---")
+        st.subheader("📋 Step 3: Operational Logistics Actions")
+        
+        # Displays manifest inside a clean layout block
+        st.code(final_manifest, language="text")
+        
+        # Formulate safe text-encoded routing payload packages
+        encoded_sms = urllib.parse.quote(final_manifest)
+        whatsapp_url = f"https://wa.me{encoded_sms}"
+        
+        # Primary deep-linked action controller button execution logic
+        st.markdown(f"""
+            <a href="{whatsapp_url}" target="_blank">
