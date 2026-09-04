@@ -92,12 +92,17 @@ if uploaded_blueprint and guest_count and menu_details:
     """
     
     with st.spinner("Executing multi-agent spatial reasoning calculations..."):
-        image_data = uploaded_blueprint.read()
-        
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[prompt, {"mime_type": "image/jpeg", "data": image_data}]
-        )
+       #   THIS FIXES THE ERROR NATIVELY:
+image_data = uploaded_file.read()
+
+# Wrap the raw image bytes in the official SDK Part class
+image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
+
+response = client.models.generate_content(
+    model="gemini-3.6-flash",
+    contents=[prompt, image_part],  # Pass the validated part safely
+)
+
         
         # Split text structure from metrics data elements cleanly
         ai_output = response.text.split("====DISPATCH====")
