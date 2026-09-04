@@ -72,12 +72,12 @@ if uploaded_blueprint and guest_count and menu_details:
     st.subheader("🔍 Step 2: Computer Vision Spatial Analysis")
     st.image(uploaded_blueprint, caption="Scanning structural layout map parameters...", use_container_width=True)
     
-    # Rigid systemic prompt constraints parsing parameters smoothly
-    prompt = f"""
+    # Clean, isolated prompt string allocation block to prevent parameter execution anomalies
+    base_instructions = """
     You are an elite hospitality operations architect specializing in computer vision spatial layouts and event logistics.
-    Analyze this hall layout image, along with these parameters: Guest Count: {guest_count}, Menu: '{menu_details}'.
+    Scan the provided image to locate text markers, dimensions, or layout bounds indicating room footprint, then process the inputs.
     
-    First, scan the image to detect or calculate the visible hall dimensions/square footage. Then, output exactly in this strict layout format:
+    Output exactly in this strict baseline format:
     Detected Spatial Footprint: [State dimensions or estimated area from image text, e.g., 8000 sq ft]
     Max Tables Fit: [Just the number of tables, e.g., 30]
     Est. Chicken Stock Needed: [Just the number in kg, e.g., 120]
@@ -85,19 +85,21 @@ if uploaded_blueprint and guest_count and menu_details:
     Est. Total Event Budget: [Total estimated wholesale cost in PKR digits only, e.g., 450000]
     ====DISPATCH====
     BANQUETAI - KITCHEN & DECOR DISPATCH ORDER
-    Venue Scope: Visual Layout Inspected | Target Capacity: {guest_count} Pax
-    Kitchen Ops: Raw inventory requirements calculated safely. Ensure food layout is active exactly 30 mins before one-dish deadline.
+    Venue Scope: Visual Layout Inspected | Target Capacity: CUSTOM_GUESTS Pax
+    Kitchen Ops: Raw raw ingredients calculated for CUSTOM_MENU. Ensure food layout is active exactly 30 mins before one-dish deadline.
     Decor Ops: Set up layout configuration safely based on blueprint scan. Maintain center stage alignment corridors clear. Khuda Hafiz.
     """
     
+    # Overwrite template payload properties cleanly using native string transformations 
+    final_prompt = base_instructions.replace("CUSTOM_GUESTS", str(guest_count)).replace("CUSTOM_MENU", menu_details)
+
     with st.spinner("Executing multi-agent spatial reasoning calculations..."):
-        # Code block inside 'with' statement must be strictly indented forward
         image_data = uploaded_blueprint.read()
         image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
         
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[prompt, image_part]
+            model='gemini-3.6-flash',
+            contents=[final_prompt, image_part]
         )
         
         # Split text structure from metrics data elements cleanly
