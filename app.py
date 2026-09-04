@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import urllib.parse
+import re
 from google import genai
 from google.genai import types
 
@@ -22,7 +23,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # =====================================================================
-# 📲 SIDEBAR: ENTERPRISE HUB & AUTOMATED QR SUITE (FIXED PERMANENT)
+# 📲 SIDEBAR: ENTERPRISE HUB & AUTOMATED QR SUITE (FIXED INDEPENDENT)
 # =====================================================================
 st.sidebar.markdown("### 🏢 BanquetAI Enterprise Console")
 st.sidebar.caption("Operational Node: Active")
@@ -34,13 +35,15 @@ st.sidebar.write("Scan this code right now to open this interface live on your m
 # Robust, production-grade URL identification loop
 try:
     from streamlit.web.server.websocket_headers import _get_websocket_headers
-    host = _get_websocket_headers().get("Host")
-    if not host or "localhost" in host:
-        app_url = "https://banquet-ai.streamlit.app"  # Fallback to absolute production deployment URL
+    headers = _get_websocket_headers()
+    host = headers.get("Host") if headers else None
+    if not host or "localhost" in host or "127.0.0.1" in host:
+        # Default programmatic fallback configuration for the unified cloud container
+        app_url = "https://streamlit.app"  
     else:
         app_url = f"https://{host}"
 except Exception:
-    app_url = "https://banquet-ai.streamlit.app"
+    app_url = "https://streamlit.app"
 
 # Generate static, bulletproof QR code frame targeting the verified live endpoint
 qr_api_url = f"https://qrserver.com{urllib.parse.quote(app_url)}"
@@ -79,16 +82,12 @@ if uploaded_blueprint and guest_count and menu_details:
     # Clean, isolated prompt string allocation block targeting precise regional culinary weight formulas
     base_instructions = """
     You are an elite hospitality operations architect specializing in computer vision spatial layouts and event logistics.
-    Scan the provided image to locate text markers, dimensions, or layout bounds indicating room footprint, then process the inputs.
+    Scan the provided image to locate text markers, dimensions, scale bars, or layout bounds indicating the room footprint.
+    Extract the actual total structural square footage numbers natively written or implied in the blueprint sketch.
     
-    Output exactly in this strict baseline format with values matching the requested calculations. Do not modify the key headers:
-    Footprint: [State dimensions or estimated area from image text, e.g., 8000 sq ft]
-    Tables: [Just the number of tables, e.g., 30]
-    Meat: [Calculate 250g meat per head for primary rice + 150g for kebab in kg, append 'kg' suffix, e.g., 120 kg]
-    Rice: [Calculate 150g high-quality Basmati per head in kg, append 'kg' suffix, e.g., 45 kg]
-    Naan: [Calculate 1.5 Naan per head baseline allocation, append 'pcs' suffix, e.g., 450 pcs]
-    Sweets: [Calculate 100g serving size of Gajar Halwa per head in kg including milk/khoya, append 'kg' suffix, e.g., 30 kg]
-    PerHeadRate: [Calculate a dynamic realistic catering per head cost in PKR digits only based on menu complexity, e.g., 1200]
+    Output exactly in this strict baseline format with values matching the requested calculations. Do not modify the headers:
+    Footprint: [Extract the precise structural square footage area string from the image, e.g., 4500 sq ft or 12500 sq ft]
+    PerHeadRate: [Calculate a dynamic realistic catering per head cost in PKR digits only based on menu complexity, e.g., 2100]
     HallRent: [Calculate realistic commercial venue rental space fee based on footprint area in PKR digits only, e.g., 90000]
     ====DISPATCH====
     ✨ BANQUETAI OFFICIAL OPERATIONAL DISPATCH MANIFEST
@@ -102,7 +101,7 @@ if uploaded_blueprint and guest_count and menu_details:
     - Total Tandoori Naan Allocation: METRIC_NAAN
     - Total Sweet Dessert Base (Gajar Halwa): METRIC_SWEET
     
-    ⚠️ FLOOR-PLAN RULE: Ensure main stage corridors remain completely clear. Service staff ready exactly 30 minutes before one-dish deadline code active. Khuda Hafiz.
+    ⚠️ OPERATIONAL CONSTRAINT ALERT: CAPACITY_ALERT_MSG
     """
     
     # Overwrite template payload properties cleanly using native string transformations 
@@ -112,7 +111,6 @@ if uploaded_blueprint and guest_count and menu_details:
         image_data = uploaded_blueprint.read()
         image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
         
-        # Explicit target set to gemini-3.6-flash model tier
         response = client.models.generate_content(
             model='gemini-3.6-flash',
             contents=[final_prompt, image_part]
@@ -120,69 +118,66 @@ if uploaded_blueprint and guest_count and menu_details:
         
         text_payload = response.text
         
-        # Structural dictionary processing to fix raw string metrics anomalies
-        metrics = {}
-        for line in text_payload.split("\n"):
-            if ":" in line and "====" not in line and "📢" not in line and "-" not in line:
-                try:
-                    key, val = line.split(":", 1)
-                    metrics[key.strip()] = val.strip()
-                except ValueError:
-                    continue
+        # Defensive regex value extraction to bypass any unexpected model generation variations
+        def extract_metric(pattern, text, fallback):
+            match = re.search(pattern, text)
+            return match.group(1).strip() if match else fallback
+
+        footprint_str = extract_metric(r"Footprint:\s*(.*)", text_payload, "1890 sq ft")
         
-        # Extract variables with resilient baseline fallbacks matching your target parameters
-        footprint = metrics.get("Footprint", "1,890 sq ft")
-        tables = metrics.get("Tables", str(guest_count // 10))
-        meat_stock = metrics.get("Meat", f"{int(guest_count * 0.4)} kg")
-        rice_stock = metrics.get("Rice", f"{int(guest_count * 0.15)} kg")
-        naan_count = metrics.get("Naan", f"{int(guest_count * 1.5)} pcs")
-        sweet_stock = metrics.get("Sweets", f"{int(guest_count * 0.1)} kg")
-        
-        # Explicit Financial Audit Arithmetic Breakdown
+        # Extract purely the digits out of the spatial footprint string for transparent math calculations
         try:
-            per_head = int(''.join(filter(str.isdigit, metrics.get("PerHeadRate", "1200"))))
-            hall_rent = int(''.join(filter(str.isdigit, metrics.get("HallRent", "90000"))))
+            area_digits = int(''.join(filter(str.isdigit, footprint_str)))
         except Exception:
-            per_head, hall_rent = 1200, 90000
+            area_digits = 1890
+
+        # =====================================================================
+        # 📐 CRITICAL SPATIAL SAFETY CALCULATOR ENGINE (DETERMINISTIC LOGIC)
+        # =====================================================================
+        # Safety Protocol: 1 standard 10-seater round table requires 150 sq ft for fire lanes and service paths
+        max_safe_tables = area_digits // 150
+        max_safe_guests = max_safe_tables * 10
+        requested_tables = int(guest_count // 10)
+        
+        # Dynamic capacity constraint checks
+        capacity_status = "🟢 Safe Capacity Allocation"
+        alert_msg = "All tables fit perfectly within structural bounds with regular emergency clearance walkways active."
+        
+        if requested_tables > max_safe_tables:
+            capacity_status = "🔴 Capacity Overload Warning"
+            table_deficit = requested_tables - max_safe_tables
+            alert_msg = f"OVERLOAD WARNING: You are forcing {requested_tables} tables into an area built safely for only {max_safe_tables} tables. Severe layout bottleneck detected! Please reduce count by {table_deficit * 10} guests or widen space borders."
+        # =====================================================================
+
+        # Deterministic local catering allocation math (Tied exactly to the guest input variable)
+        meat_stock = f"{int(guest_count * 0.40)} kg"      # 250g Rice dish + 150g Kebab
+        rice_stock = f"{int(guest_count * 0.15)} kg"      # 150g high-quality Basmati baseline
+        naan_count = f"{int(guest_count * 1.50)} pcs"     # 1.5 Naan per head distribution
+        sweet_stock = f"{int(guest_count * 0.10)} kg"     # 100g serving size allocation
+        
+        # Explicit Financial Audit Extraction
+        per_head_str = extract_metric(r"PerHeadRate:\s*(.*)", text_payload, "2100")
+        hall_rent_str = extract_metric(r"HallRent:\s*(.*)", text_payload, "90000")
+        
+        try:
+            per_head = int(''.join(filter(str.isdigit, per_head_str)))
+            hall_rent = int(''.join(filter(str.isdigit, hall_rent_str)))
+        except Exception:
+            per_head, hall_rent = 2100, 90000
             
         total_budget = (guest_count * per_head) + hall_rent
         saas_fee = int(total_budget * 0.015)
         
-        # Isolate the exact manifest log cleanly to prevent index exceptions
-        try:
+        # Format the automated operational text blocks safely without breaks
+        if "====DISPATCH====" in text_payload:
             ai_dispatch_block = text_payload.split("====DISPATCH====")[-1].strip()
-            final_manifest = ai_dispatch_block.replace("METRIC_MEAT", meat_stock).replace("METRIC_RICE", rice_stock).replace("METRIC_NAAN", naan_count).replace("METRIC_SWEET", sweet_stock)
-        except Exception:
-            final_manifest = f"✨ BANQUETAI MANIFEST\n📍 Origin Point: {location}\n👥 Target: {guest_count} Pax\n📢 Meat: {meat_stock} | Rice: {rice_stock} | Naan: {naan_count} | Dessert: {sweet_stock}"
+            final_manifest = ai_dispatch_block.replace("METRIC_MEAT", meat_stock).replace("METRIC_RICE", rice_stock).replace("METRIC_NAAN", naan_count).replace("METRIC_SWEET", sweet_stock).replace("CAPACITY_ALERT_MSG", alert_msg)
+        else:
+            final_manifest = f"✨ BANQUETAI OFFICIAL OPERATIONAL DISPATCH MANIFEST\n📍 Venue Scope: Visual Layout Inspected\n👥 Target Capacity: {guest_count} Pax\n🍱 Catering Blueprint: {menu_details}\n\n📢 RAW PROCUREMENT MATRIX LOG:\n- Estimated Total Meat Required: {meat_stock}\n- Estimated Total Rice Required: {rice_stock}\n- Total Tandoori Naan Allocation: {naan_count}\n- Total Sweet Dessert Base (Gajar Halwa): {sweet_stock}\n\n⚠️ FLOOR-PLAN RULE: {alert_msg} Khuda Hafiz."
 
         # =====================================================================
-        # 📈 HIGH-IMPACT METRICS VISUAL GRID (CLEAN & CATCHY BRAND DESIGN)
+        # 📈 HIGH-IMPACT METRICS VISUAL GRID (CLEANLY ALIGNED)
         # =====================================================================
         st.subheader("📊 Operational Analytics & Resource Matrix")
         
-        m_col1, m_col2, m_col3 = st.columns(3)
-        m_col1.metric("📐 Layout Space Area", footprint)
-        m_col2.metric("🍽️ Safe 10-Seater Tables", f"{tables} Tables")
-        m_col3.metric("🍗 Required Meat Stock", meat_stock)
-        
-        m_col4, m_col5, m_col6 = st.columns(3)
-        m_col4.metric("🌾 Required Rice Stock", rice_stock)
-        m_col5.metric("🫓 Total Naan Count", naan_count)
-        m_col6.metric("🥕 Gajar Halwa Desserts", sweet_stock)
-        
-        st.markdown("### 💰 Financial Audit & Commercial Ledger")
-        
-        f_col1, f_col2, f_col3 = st.columns(3)
-        f_col1.metric("💰 Gross Event Volume", f"Rs. {total_budget:,}")
-        f_col2.metric("🔥 SaaS Platform Yield (1.5%)", f"Rs. {saas_fee:,}", delta="Net Revenue")
-        
-        # 🧾 DYNAMIC TRANSPARENT COST LEDGER (Judges Evaluation Tool)
-        with st.expander("🔍 View Transparent Cost Audit Calculations"):
-            st.write(f"**Catering Menu Cost Matrix:** {guest_count} Guests × Rs. {per_head:,}/Head = **Rs. {(guest_count * per_head):,}**")
-            st.write(f"**Venue Space Rental Fee:** Extracted Blueprint Footprint Metric = **Rs. {hall_rent:,}**")
-            st.write(f"**Gross Audited Total Calculation:** (Catering Menu Cost) + (Venue Space Rental Fee) = **Rs. {total_budget:,}**")
-        # =====================================================================
-        
-        st.write("---")
-        st.subheader("📋 Step 3: Operational Logistics Actions")
-        
+        # Row 1 columns definition
