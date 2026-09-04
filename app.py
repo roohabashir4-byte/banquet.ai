@@ -32,14 +32,13 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 📲 Live Audience Testing")
 st.sidebar.write("Scan this code right now to open this interface live on your mobile device directly from your seat!")
 
-# Robust, production-grade URL identification loop
+# Dynamic web URL discovery engine
 try:
     from streamlit.web.server.websocket_headers import _get_websocket_headers
     headers = _get_websocket_headers()
     host = headers.get("Host") if headers else None
     if not host or "localhost" in host or "127.0.0.1" in host:
-        # Default programmatic fallback configuration for the unified cloud container
-        app_url = "https://streamlit.app"  
+        app_url = "https://streamlit.app"  # Fallback to absolute production deployment URL
     else:
         app_url = f"https://{host}"
 except Exception:
@@ -86,7 +85,7 @@ if uploaded_blueprint and guest_count and menu_details:
     Extract the actual total structural square footage numbers natively written or implied in the blueprint sketch.
     
     Output exactly in this strict baseline format with values matching the requested calculations. Do not modify the headers:
-    Footprint: [Extract the precise structural square footage area string from the image, e.g., 4500 sq ft or 12500 sq ft]
+    Footprint: [Extract the precise structural square footage area string from the image, e.g., 4500 sq ft or 1890 sq ft]
     PerHeadRate: [Calculate a dynamic realistic catering per head cost in PKR digits only based on menu complexity, e.g., 2100]
     HallRent: [Calculate realistic commercial venue rental space fee based on footprint area in PKR digits only, e.g., 90000]
     ====DISPATCH====
@@ -101,18 +100,19 @@ if uploaded_blueprint and guest_count and menu_details:
     - Total Tandoori Naan Allocation: METRIC_NAAN
     - Total Sweet Dessert Base (Gajar Halwa): METRIC_SWEET
     
-    ⚠️ OPERATIONAL CONSTRAINT ALERT: CAPACITY_ALERT_MSG
+    📢 STRUCTURAL ADVISORY NOTE: CAPACITY_ALERT_MSG
     """
     
     # Overwrite template payload properties cleanly using native string transformations 
     final_prompt = base_instructions.replace("CUSTOM_GUESTS", str(guest_count)).replace("CUSTOM_MENU", menu_details)
 
-    with st.spinner("Executing spatial reasoning calculations via gemini-3.6-flash..."):
+    with st.spinner("Executing spatial reasoning calculations via gemini-2.5-flash..."):
         image_data = uploaded_blueprint.read()
         image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
         
+        # FIXED: Corrected model endpoint to production flagship 'gemini-2.5-flash'
         response = client.models.generate_content(
-            model='gemini-3.6-flash',
+            model='gemini-2.5-flash',
             contents=[final_prompt, image_part]
         )
         
