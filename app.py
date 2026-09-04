@@ -106,13 +106,13 @@ if uploaded_blueprint and guest_count and menu_details:
     # Overwrite template payload properties cleanly using native string transformations 
     final_prompt = base_instructions.replace("CUSTOM_GUESTS", str(guest_count)).replace("CUSTOM_MENU", menu_details)
 
-    with st.spinner("Executing spatial reasoning calculations via gemini-3-flash..."):
+    with st.spinner("Executing spatial reasoning calculations via gemini-3.6-flash..."):
         image_data = uploaded_blueprint.read()
         image_part = types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
         
         # FIXED: Corrected model naming structure flag parameter to native canonical string
         response = client.models.generate_content(
-            model='gemini-3-flash',
+            model='gemini-3.6-flash',
             contents=[final_prompt, image_part]
         )
         
